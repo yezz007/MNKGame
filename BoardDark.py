@@ -2,7 +2,9 @@ from tkinter import *
 from BoardStandard import *
 
 class BoardDark(BoardStandard):
-
+    '''
+    Tema gelap dari papan permainan
+    '''
     def __init__(self, parent, baris, kolom, menang, size=50):
         super().__init__(parent, baris, kolom, menang, size)
 

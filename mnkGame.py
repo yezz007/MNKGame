@@ -1,6 +1,7 @@
 from tkinter import *
 from BoardStandard import *
 from BoardDark import *
+from GameLogic import *
 
 class MNKGame:
 
@@ -9,7 +10,7 @@ class MNKGame:
         self.window.title("MNK Game")
         self.showMenu()
         self.fixWindowSize()
-        #test
+        self.logic = GameLogic()
         self.count = 1
         self.window.mainloop()
 
@@ -31,9 +32,9 @@ class MNKGame:
         win = 5
         size = 40
         if self.count % 2 == 1:
-            self.board = BoardStandard(self.window, baris, kolom, win, size)
+            self.board = BoardStandard(self.window, self.logic, baris, kolom, win, size)
         else:
-            self.board = BoardDark(self.window, baris, kolom, win, size)
+            self.board = BoardDark(self.window, self.logic, baris, kolom, win, size)
         self.window.minsize(width=(kolom*size)+10, height=(baris*size)+10)
         self.endButton = Button(self.board, text='End Game',
         font='Helvetica 16 bold', command=self.endGame)
