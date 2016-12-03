@@ -17,7 +17,7 @@ class BoardStandard(Frame):
         self.setColors()
         self.canvas = Canvas(self, bg=self.borderColor,
         width=(self.kolom*self.size)+10, height=(self.baris*self.size)+10)
-        self.canvas.pack(padx=5, pady=5)
+        self.canvas.pack()
         self.tileObjList = [] #list berisikan objek kotak-kotak
         self.populateBoard()
         print("Board built", self)
@@ -46,12 +46,12 @@ class BoardStandard(Frame):
             x = 5
             for j in range(self.kolom):
                 self.tileObjList.append(TileStandard(self.canvas, x, y, self.size,
-                self.neutralColor, self.squareBorder, self.p1Color, self.p2Color))
+                self.neutralColor, self.squareBorder, self.p1Color, self.p2Color, command=self.evaluate))
                 x += self.size
             y += self.size
-        self.canvas.bind("<Button-1>", self.evaluate)
+        #self.canvas.bind("<Button-1>", self.evaluate)
 
-    def evaluate(self, event):
+    def evaluate(self):
         '''
         Mengevaluasi apakah sudah ada yang menang
         '''
@@ -155,5 +155,6 @@ class BoardStandard(Frame):
                 i += self.kolom
 
     def win(self, winnerId):
+        print('win')
         for tiles in self.tileObjList:
             tiles.occupy(winnerId)

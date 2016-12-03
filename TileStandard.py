@@ -4,7 +4,7 @@ class TileStandard:
 
     staticIntTurn = 1 # a static attribute, you know what it means. 1 = P1. 2 = P2
 
-    def __init__(self, canvas, xpos, ypos, size, neutralFill, outline, p1Color, p2Color):
+    def __init__(self, canvas, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs):
         self.canvas = canvas
         self.xpos = xpos
         self.ypos = ypos
@@ -17,6 +17,12 @@ class TileStandard:
         self.ypos+self.size, fill=self.neutralFill, outline=self.outline)
         self.canvas.tag_bind(self.id, "<Button-1>", self.onClick)
         self.occupant = 0 # 0 Netral, 1 P1, 2 P2
+        #fungsi yang akan dipanggil jika tile diklik
+        self.hasCommand = False
+        if 'command' in kwargs:
+            self.hasCommand = True
+            self.command = kwargs['command']
+
 
     def getId(self):
         return self.id
@@ -46,3 +52,8 @@ class TileStandard:
                 TileStandard.staticIntTurn = 1
                 occupantId = 2
             self.occupy(occupantId)
+            self.eventOnClick()
+
+    def eventOnClick(self):
+        if self.hasCommand:
+            self.command()

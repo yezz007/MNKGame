@@ -34,7 +34,7 @@ class MNKGame:
             self.board = BoardStandard(self.window, baris, kolom, win, size)
         else:
             self.board = BoardDark(self.window, baris, kolom, win, size)
-        self.window.minsize(width=(kolom*size)+100, height=(baris*size)+100)
+        self.window.minsize(width=(kolom*size)+10, height=(baris*size)+10)
         self.endButton = Button(self.board, text='End Game',
         font='Helvetica 16 bold', command=self.endGame)
         self.endButton.pack(padx=5, pady=5)
