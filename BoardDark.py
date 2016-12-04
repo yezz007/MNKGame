@@ -5,8 +5,8 @@ class BoardDark(BoardStandard):
     '''
     Tema gelap dari papan permainan
     '''
-    def __init__(self, parent, baris, kolom, menang, size=50):
-        super().__init__(parent, baris, kolom, menang, size)
+    def __init__(self, parent, logic, baris, kolom, menang, extend, squareSize=50, **kwargs):
+        super().__init__(parent, logic, baris, kolom, menang, extend, squareSize, **kwargs)
 
     #override
     def setColors(self):

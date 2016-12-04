@@ -3,6 +3,7 @@ from tkinter import *
 class TileStandard:
 
     staticIntTurn = 1 # a static attribute, you know what it means. 1 = P1. 2 = P2
+    staticBoolWin = False #Menandai permainan berakhir
 
     def __init__(self, canvas, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs):
         self.canvas = canvas
@@ -22,7 +23,13 @@ class TileStandard:
         if 'command' in kwargs:
             self.hasCommand = True
             self.command = kwargs['command']
+        self.flag = 99999999 #untuk menandai tile mana yang memenangkan permainan
 
+    def getFlag(self):
+        return self.flag
+
+    def setFlag(self, intFlag):
+        self.flag = intFlag
 
     def getId(self):
         return self.id
@@ -42,9 +49,16 @@ class TileStandard:
             self.occupant = 2
         self.canvas.itemconfigure(self.id, fill=color)
 
+    def markWinner(self):
+        markSize = self.size // 3
+        markX = (self.xpos + markSize)
+        markY = (self.ypos + markSize)
+        self.canvas.create_oval(markX, markY,
+        markX + markSize, markY + markSize, fill=self.neutralFill)
+
     def onClick(self, event):
         print(self.id)
-        if not self.isOccupied():
+        if not (self.isOccupied() or TileStandard.staticBoolWin):
             if TileStandard.staticIntTurn == 1:
                 occupantId = 1
                 TileStandard.staticIntTurn = 2
