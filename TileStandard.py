@@ -2,9 +2,6 @@ from tkinter import *
 
 class TileStandard:
 
-    staticIntTurn = 1 # a static attribute, you know what it means. 1 = P1. 2 = P2
-    staticBoolWin = False #Menandai permainan berakhir
-
     def __init__(self, canvas, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs):
         self.canvas = canvas
         self.xpos = xpos
@@ -15,7 +12,7 @@ class TileStandard:
         self.p1Color = p1Color
         self.p2Color = p2Color
         self.id = self.canvas.create_rectangle(self.xpos, self.ypos, self.xpos+self.size,
-        self.ypos+self.size, fill=self.neutralFill, outline=self.outline)
+        self.ypos+self.size, fill=self.neutralFill, outline=self.outline, width=2.0)
         self.canvas.tag_bind(self.id, "<Button-1>", self.onClick)
         self.occupant = 0 # 0 Netral, 1 P1, 2 P2
         #fungsi yang akan dipanggil jika tile diklik
@@ -57,17 +54,5 @@ class TileStandard:
         markX + markSize, markY + markSize, fill=self.neutralFill)
 
     def onClick(self, event):
-        print(self.id)
-        if not (self.isOccupied() or TileStandard.staticBoolWin):
-            if TileStandard.staticIntTurn == 1:
-                occupantId = 1
-                TileStandard.staticIntTurn = 2
-            else:
-                TileStandard.staticIntTurn = 1
-                occupantId = 2
-            self.occupy(occupantId)
-            self.eventOnClick()
-
-    def eventOnClick(self):
         if self.hasCommand:
-            self.command()
+            self.command(self)

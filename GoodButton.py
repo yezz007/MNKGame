@@ -6,7 +6,7 @@ class GoodButton(Button):
     '''
     def __init__(self, parent, **kwargs):
         super().__init__(parent, kwargs)
-        self.config(font='Helvetica 20 bold', relief='groove')
+        self.config(font='Helvetica 20 bold', relief='ridge', cursor='hand2', width=20)
         self.bind("<Enter>", self.onMouseOver)
         self.bind("<Leave>", self.onMouseLeave)
 

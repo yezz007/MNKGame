@@ -10,6 +10,8 @@ class GameLogic:
         self.kolom = 1
         self.menang = 1
         self.tileObjList = []
+        self.turn = 1 # giliran player 1
+        self.hasWinner = False
 
     def setupEvaluator(self, canvas, baris, kolom, menang, tiles, helper):
         self.canvas = canvas
@@ -18,21 +20,39 @@ class GameLogic:
         self.menang = menang
         self.helperText = helper
         self.tileObjList = tiles
+        self.turn = 1 # giliran player 1
+        self.hasWinner = False
 
     def updateHelper(self):
-        if TileStandard.staticIntTurn == 1:
-            self.canvas.itemconfigure(self.helperText, text='Player 1 Turn')
-        elif TileStandard.staticIntTurn == 2:
-            self.canvas.itemconfigure(self.helperText, text='Player 2 Turn')
+        if self.hasWinner:
+            self.canvas.itemconfigure(self.helperText, text='Permainan sudah selesai. -->')
+        elif self.turn == 1:
+            self.canvas.itemconfigure(self.helperText, text='Giliran Player 1')
+        elif self.turn == 2:
+            self.canvas.itemconfigure(self.helperText, text='Giliran Player 2')
+
+    def occupyTile(self, tile):
+        if not (tile.isOccupied() or self.hasWinner):
+            if self.turn == 1:
+                occupantId = 1
+                self.turn = 2
+            else:
+                self.turn = 1
+                occupantId = 2
+            tile.occupy(occupantId)
+            self.updateHelper()
+            self.evaluate()
+        else:
+            self.updateHelper()
 
     def evaluate(self):
         '''
         Mengevaluasi apakah sudah ada yang menang
         '''
-        self.updateHelper()
         #Jumlah tile yang dikuasai oleh pemain berturut-turut
         intP1Lines = 0
         intP2Lines = 0
+        intNeutral = self.baris*self.kolom
         intFlag = 0
         #evaluasi per baris jika n >= k:
         if self.kolom >= self.menang:
@@ -45,15 +65,23 @@ class GameLogic:
                 if self.tileObjList[i].getOccupant() == 1:
                     intP1Lines += 1
                     intP2Lines = 0
+                    intNeutral -= 1
                 elif self.tileObjList[i].getOccupant() == 2:
                     intP1Lines = 0
                     intP2Lines += 1
+                    intNeutral -= 1
+                else:
+                    intP1Lines = 0
+                    intP2Lines = 0
                 if intP1Lines == self.menang:
                     self.win(1, intFlag - self.menang)
                     return
                 elif intP2Lines == self.menang:
                     self.win(2, intFlag - self.menang)
                     return
+        if intNeutral <= 0: #Penuh
+            self.hasWinner = True
+            self.canvas.itemconfigure(self.helperText, text='Tidak ada yang menang!')
         #evaluasi per kolom jika baris >= n:
         if self.baris >= self.menang:
             i = 0
@@ -176,10 +204,10 @@ class GameLogic:
                     break
                 #periksa baris berikutnya(kolom 1)
                 i += self.kolom
-            #evaluasi yang dimulai dari kolom pertama, diagonal lain
-            i = self.kolom-1 #0 sudah diperiksa
+            #evaluasi yang dimulai dari kolom terakhir, diagonal lain
+            i = self.kolom-1 #kolom terakhir
             while (i < self.baris*self.kolom):
-                if (i + ((self.menang - 1) * (self.kolom + 1))) < (self.baris*self.kolom):
+                if (i + ((self.menang - 1) * (self.kolom - 1))) < (self.baris*self.kolom):
                     #logika untuk mengecek apa mungkin dalam satu diagonal diperoleh k tiles
                     j = i
                     intP2Lines = 0
@@ -209,11 +237,11 @@ class GameLogic:
                 i += self.kolom
 
     def win(self, winnerId, winnerFlag):
-        TileStandard.staticBoolWin = True
+        self.hasWinner = True
         if winnerId == 1:
-            self.canvas.itemconfigure(self.helperText, text='Player 1 Win!')
+            self.canvas.itemconfigure(self.helperText, text='Player 1 Menang!')
         else:
-            self.canvas.itemconfigure(self.helperText, text='Player 2 Win!')
+            self.canvas.itemconfigure(self.helperText, text='Player 2 Menang!')
         print('win')
         for tiles in self.tileObjList:
             if (tiles.getFlag() > (winnerFlag + self.menang)):

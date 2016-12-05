@@ -9,10 +9,11 @@ Asisten : Kak Wira
 from MNKGame import *
 try:
     from win32api import GetSystemMetrics
+    #Mendapatkan resolusi layar
     width = GetSystemMetrics(0)
     height = GetSystemMetrics(1)
 except:
     print("Cannot load win32api")
-    width = 640
-    heigth = 480
+    width = 800
+    height = 600
 MNKGame(width, height)
