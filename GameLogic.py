@@ -6,30 +6,49 @@ class GameLogic:
     Class yang mengatur logika permainan
     '''
     def __init__(self):
+        '''
+        Constructor yang hanya formalitas...
+        Setidaknya disini dapat terlihat dengan jelas
+        semua atribut kelas ini, bersih dari logika
+        Semua diatur di method setupEvaluator
+        '''
         self.baris = 1
         self.kolom = 1
         self.menang = 1
         self.tileObjList = []
         self.turn = 1 # giliran player 1
         self.hasWinner = False
+        self.p1Name = 'Player 1'
+        self.p2Name = 'Player 2'
+        self.hasEventHelperChange = False
+        self.hasEventOnWin = False
 
-    def setupEvaluator(self, canvas, baris, kolom, menang, tiles, helper):
-        self.canvas = canvas
+    def setupEvaluator(self, baris, kolom, menang, tiles, p1Name, p2Name, **kwargs):
         self.baris = baris
         self.kolom = kolom
         self.menang = menang
-        self.helperText = helper
         self.tileObjList = tiles
+        self.p1Name = p1Name
+        self.p2Name = p2Name
         self.turn = 1 # giliran player 1
         self.hasWinner = False
+        self.hasEventHelperChange = False
+        self.hasEventOnWin = False
+        if 'helperChanger' in kwargs:
+            self.hasEventHelperChange = True
+            self.setHelperText = kwargs['helperChanger'] #dengan 1 argumen: text
+        if 'eventOnWin' in kwargs:
+            self.hasEventOnWin = True
+            self.eventOnWin = kwargs['eventOnWin']
 
     def updateHelper(self):
-        if self.hasWinner:
-            self.canvas.itemconfigure(self.helperText, text='Permainan sudah selesai. -->')
-        elif self.turn == 1:
-            self.canvas.itemconfigure(self.helperText, text='Giliran Player 1')
-        elif self.turn == 2:
-            self.canvas.itemconfigure(self.helperText, text='Giliran Player 2')
+        if self.hasEventHelperChange:
+            if self.hasWinner:
+                self.setHelperText('Permainan sudah selesai. -->')
+            elif self.turn == 1:
+                self.setHelperText('Giliran {}'.format(self.p1Name))
+            elif self.turn == 2:
+                self.setHelperText('Giliran {}'.format(self.p2Name))
 
     def occupyTile(self, tile):
         if not (tile.isOccupied() or self.hasWinner):
@@ -81,7 +100,10 @@ class GameLogic:
                     return
         if intNeutral <= 0: #Penuh
             self.hasWinner = True
-            self.canvas.itemconfigure(self.helperText, text='Tidak ada yang menang!')
+            if self.hasEventOnWin:
+                self.eventOnWin()
+            if self.hasEventHelperChange:
+                self.setHelperText('Tidak ada yang menang!')
         #evaluasi per kolom jika baris >= n:
         if self.baris >= self.menang:
             i = 0
@@ -239,12 +261,25 @@ class GameLogic:
     def win(self, winnerId, winnerFlag):
         self.hasWinner = True
         if winnerId == 1:
-            self.canvas.itemconfigure(self.helperText, text='Player 1 Menang!')
+            if self.hasEventHelperChange:
+                self.setHelperText('{} Menang!'.format(self.p1Name))
         else:
-            self.canvas.itemconfigure(self.helperText, text='Player 2 Menang!')
+            if self.hasEventHelperChange:
+                self.setHelperText('{} Menang!'.format(self.p2Name))
         print('win')
         for tiles in self.tileObjList:
             if (tiles.getFlag() > (winnerFlag + self.menang)):
                 break
             if (tiles.getFlag() >= winnerFlag):
                 tiles.markWinner()
+        if self.hasEventOnWin:
+            self.eventOnWin()
+
+    def getTilesOccupantList(self):
+        lisTileOccupant = []
+        for tiles in self.tileObjList:
+            lisTileOccupant.append(tiles.getOccupant())
+        return lisTileOccupant
+
+    def getCurrentTurn(self):
+        return self.turn
