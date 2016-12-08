@@ -30,8 +30,12 @@ class BoardStandard(Frame):
             self.eventOnEnd = kwargs['eventOnEndGame']
         if 'p1Name' in kwargs:
             self.p1Name = kwargs['p1Name']
+        if self.p1Name == '':
+            self.p1Name = 'Anonymous'
         if 'p2Name' in kwargs:
             self.p2Name = kwargs['p2Name']
+        if self.p2Name == '':
+            self.p2Name = 'Mysterious'
         if 'eventOnSaveGame' in kwargs:
             self.canSaveGame = True
             self.eventOnSaveGame = kwargs['eventOnSaveGame']
@@ -46,13 +50,22 @@ class BoardStandard(Frame):
         print("Board built", self)
 
     def createHelper(self):
+        '''
+        Menginstansiasi teks pembantu yang menampilkan 'Giliran player 1'
+        '''
         self.helper = self.canvas.create_text(((self.kolom*self.size)//2)+self.extend, (self.baris*self.size)+20,
         font = 'Helvetica 16', fill=self.neutralColor, text='Giliran {}'.format(self.p1Name))
 
     def setHelperText(self, txt):
+        '''
+        Method yang mengubah teks helper
+        '''
         self.canvas.itemconfigure(self.helper, text=txt)
 
     def createButtons(self):
+        '''
+        Membuat tombol-tombol
+        '''
         self.crossDefaultColor = self.neutralColor
         self.crossMouseOverColor = 'red'
         self.saveDefaultColor = self.neutralColor
@@ -73,6 +86,9 @@ class BoardStandard(Frame):
         self.canvas.tag_bind(self.saveButton, "<Button-1>", self.onSaveButtonMouseClick)
 
     def onSaveGame(self, event):
+        '''
+        Jika ada event saveGame, panggil methodnya
+        '''
         if self.canSaveGame:
             self.eventOnSaveGame()
 
@@ -80,6 +96,9 @@ class BoardStandard(Frame):
         self.crossBitmap.config(foreground='#1aff0e') #hijau muda
 
     def onWin(self):
+        '''
+        Mengubah warna ikon ketika menang
+        '''
         self.crossBitmap.config(foreground='red')
         self.saveBitmap.config(foreground='#0029ff')
         self.crossDefaultColor = 'red'
@@ -110,33 +129,50 @@ class BoardStandard(Frame):
         '''
         self.borderColor = 'black'
         self.neutralColor = 'white'
+        self.darkerNeutralColor = '#ececec'
         self.squareBorder = 'black'
         self.p1Color = '#1aff0e' #hijau muda
         self.p2Color = 'red'
 
     def onEndGame(self, event):
+        '''
+        Ketika permainan berakhir, panggil method yang sudah dipass
+        '''
         self.tileObjList.clear()
         self.canvas.delete("all")
         if self.fireEventOnEnd:
             self.eventOnEnd()
 
     def populateBoard(self):
+        '''
+        Mengisi papan permainan dengan tiles
+        '''
         x = 5+self.extend
         y = 5
         for i in range(self.baris):
+            if i % 2 == 0:
+                color1 = self.neutralColor
+                color2 = self.darkerNeutralColor
+            else:
+                color1 = self.darkerNeutralColor
+                color2 = self.neutralColor
             x = 5+self.extend
             for j in range(self.kolom):
+                if j % 2 == 0:
+                    tileColor = color1
+                else:
+                    tileColor = color2
                 if self.tileModel == 1:
                     self.tileObjList.append(TileStandard(self.canvas, x, y, self.size,
-                    self.neutralColor, self.squareBorder, self.p1Color, self.p2Color,
+                    tileColor, self.squareBorder, self.p1Color, self.p2Color,
                     command=self.gameLogic.occupyTile))
                 elif self.tileModel == 2:
                     self.tileObjList.append(TileExOu(self.canvas, x, y, self.size,
-                    self.neutralColor, self.squareBorder, self.p1Color, self.p2Color,
+                    tileColor, self.squareBorder, self.p1Color, self.p2Color,
                     command=self.gameLogic.occupyTile))
                 elif self.tileModel == 3:
                     self.tileObjList.append(TileCoin(self.canvas, x, y, self.size,
-                    self.neutralColor, self.squareBorder, self.p1Color, self.p2Color,
+                    tileColor, self.squareBorder, self.p1Color, self.p2Color,
                     command=self.gameLogic.occupyTile))
                 x += self.size
             y += self.size

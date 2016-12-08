@@ -14,9 +14,9 @@ class TileExOu(TileStandard):
             color = self.p1Color
             self.occupant = 1
             self.canvas.create_line(self.xpos, self.ypos, self.xpos+self.size, self.ypos+self.size,
-            fill = color, width=3.0)
+            fill = color, width=5.0)
             self.canvas.create_line(self.xpos, self.ypos+self.size, self.xpos+self.size, self.ypos,
-            fill = color, width=3.0)
+            fill = color, width=5.0)
         elif intOccupantId == 2:
             color = self.p2Color
             self.occupant = 2

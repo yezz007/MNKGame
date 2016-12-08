@@ -39,14 +39,14 @@ class MNKGame:
         '''
         Memuat settings sebelumnya, supaya user tidak perlu repot-repot lagi :)
         '''
-        dictData = GameLoader.loadSettings()
-        self.n.set(dictData['baris'])
-        self.m.set(dictData['kolom'])
-        self.k.set(dictData['menang'])
-        self.theme.set(dictData['theme'])
-        self.tileId.set(dictData['tileModel'])
-        self.namaP1.set(dictData['namaP1'])
-        self.namaP2.set(dictData['namaP2'])
+        dataList = GameLoader.loadSettings()
+        self.n.set(dataList[0])
+        self.m.set(dataList[1])
+        self.k.set(dataList[2])
+        self.theme.set(dataList[3])
+        self.tileId.set(dataList[4])
+        self.namaP1.set(dataList[5])
+        self.namaP2.set(dataList[6])
 
 
     def fixWindowSize(self):
@@ -62,11 +62,83 @@ class MNKGame:
         '''
         print("Menu shown")
         self.menuFrame = Frame(self.window)
-        self.menuFrame.pack(padx=5, pady=5)
-        self.quickStartButton = GoodButton(self.menuFrame, text='Mulai Permainan', command=self.quickStartGame)
+        self.menuFrame.pack(padx=5, pady=100)
+        self.loadGameButton = GoodButton(self.menuFrame, text='Lanjutkan Permainan', command=self.showLoadGameMenu)
+        self.loadGameButton.pack(padx=5, pady=5)
+        self.quickStartButton = GoodButton(self.menuFrame, text='Mulai Permainan Baru', command=self.quickStartGame)
         self.quickStartButton.pack(padx=5, pady=5)
-        self.setUpButton = GoodButton(self.menuFrame, text='Atur Permainan', command=self.showSetUpMenu)
+        self.setUpButton = GoodButton(self.menuFrame, text='Atur Permainan Baru', command=self.showSetUpMenu)
         self.setUpButton.pack(padx=5, pady=5)
+
+    def showLoadGameMenu(self):
+        self.games = []
+        self.chooseGame = IntVar()
+        savedGameList = GameLoader.loadGame()
+        self.hideMenu()
+        self.loadFrame = Frame(self.window)
+        self.loadFrame.pack(padx=5, pady=5)
+        savedGames = 0
+        print(len(savedGameList))
+        for i in range(len(savedGameList)-1, 0, -1):
+            if savedGames >= 10:
+                messagebox.showinfo("Terlalu Banyak Permainan Tersimpan", "Kami Hanya Menampilkan 10 Permainan Terkini")
+                break
+            if len(savedGameList[i]) == 10:
+                self.games.append(savedGameList[i])
+                p1Name = savedGameList[i][5]
+                p2Name = savedGameList[i][6]
+                pemenang = 'Belum Ada'
+                if savedGameList[i][9] == 1:
+                    pemenang = p1Name
+                elif savedGameList[i][9] == 2:
+                    pemenang = p2Name
+                Radiobutton(self.loadFrame, font='Helvetica 16', value=savedGames,
+                variable=self.chooseGame, text='{} vs {} - Pemenang = {}'.format(p1Name, p2Name, pemenang)).pack(padx=5, pady=5, anchor=W)
+                savedGames += 1
+            else:
+                print('Not a valid game data')
+        GoodButton(self.loadFrame, text='Lanjutkan Permainan', command=self.playSavedGame).pack(padx=5, pady=5)
+        GoodButton(self.loadFrame, text='Kembali', command=self.hideLoadGameMenu).pack(padx=5, pady=5)
+
+    def hideLoadGameMenu(self):
+        self.loadFrame.destroy()
+        self.showMenu()
+
+    def playSavedGame(self):
+        self.loadFrame.destroy()
+        print(self.games)
+        gameId = self.chooseGame.get()
+        baris = self.games[gameId][0]
+        kolom = self.games[gameId][1]
+        menang = self.games[gameId][2]
+        theme = self.games[gameId][3]
+        tileModel = self.games[gameId][4]
+        namaP1 = self.games[gameId][5]
+        namaP2 = self.games[gameId][6]
+        size1 = (self.screenHeight - 120) // baris
+        size2 = (self.screenWidth - 120) // kolom
+        extend = 0 #blank space canvas, supaya tulisan muat
+        if size1 > size2:
+            size = size2
+        else:
+            size = size1
+        if size*kolom < 200:
+            extend = 200
+        self.startGame(baris, kolom, size, extend, menang, theme, tileModel, namaP1, namaP2)
+        tileOccupantStr = self.games[gameId][7].split(',')
+        tileOccupantList = []
+        turn = self.games[gameId][-2]
+        for char in tileOccupantStr:
+            tileOccupantList.append(int(char))
+        self.logic.continueFromSavedPoint(tileOccupantList, turn)
+        self.n.set(baris)
+        self.m.set(kolom)
+        self.theme.set(theme)
+        self.k.set(menang)
+        self.tileId.set(tileModel)
+        self.namaP1.set(namaP1)
+        self.namaP2.set(namaP2)
+
 
     def quickStartGame(self):
         '''
@@ -83,6 +155,11 @@ class MNKGame:
             size = size1
         if size*self.m.get() < 200:
             extend = 200
+        if len(self.namaP1.get()) >= 10:
+            self.namaP1.set("Player 1")
+        if len(self.namaP2.get()) >= 10:
+            self.namaP2.set("Player 1")
+        self.hideMenu()
         self.startGame(self.n.get(), self.m.get(), size, extend, self.k.get(),
         self.theme.get(), self.tileId.get(), self.namaP1.get(), self.namaP2.get())
 
@@ -199,6 +276,10 @@ class MNKGame:
         if size < 25:
             messagebox.showerror("Layar Tidak Muat", "Layar monitor kamu tidak muat untuk memainkan game dengan setting ini :(")
             return
+        #validasi nama
+        if (len(namaP1) > 10) or (len(namaP2) > 10):
+            messagebox.showerror("Layar Tidak Muat", "Layar monitor kamu tidak muat untuk memunculkan nama yang kamu masukkan :(")
+            return
         self.startGame(baris, kolom, size, extend, menang, theme, tile, namaP1, namaP2)
         self.setUpFrame.destroy()
         self.saveSettings(baris, kolom, menang, theme, tile, namaP1, namaP2)
@@ -223,13 +304,13 @@ class MNKGame:
             tileModel, size, eventOnEndGame=self.endGame, p1Name=namaP1, p2Name=namaP2, eventOnSaveGame=self.onSaveGame)
         self.window.minsize(width=(kolom*size)+12+extend, height=(baris*size)+42)
         self.window.maxsize(width=(kolom*size)+12+extend, height=(baris*size)+42)
-        self.hideMenu()
 
     def onSaveGame(self):
         tileList = self.logic.getTilesOccupantList()
         turn = self.logic.getCurrentTurn()
+        pemenang = self.logic.getWinnerId()
         isSaveSuccess = GameLoader.saveGame(self.n.get(), self.m.get(), self.k.get(),
-        self.theme.get(), self.tileId.get(), self.namaP1.get(), self.namaP2.get(), tileList, turn)
+        self.theme.get(), self.tileId.get(), self.namaP1.get(), self.namaP2.get(), tileList, turn, pemenang)
         if isSaveSuccess:
             messagebox.showinfo("Permainan Berhasil Disimpan", "Permainan ini telah berhasil disimpan")
         else:

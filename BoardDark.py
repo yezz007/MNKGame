@@ -12,6 +12,7 @@ class BoardDark(BoardStandard):
     def setColors(self):
         self.borderColor = 'white'
         self.neutralColor = 'black'
+        self.darkerNeutralColor = '#131313'
         self.squareBorder = 'white'
         self.p1Color = 'yellow'
         self.p2Color = '#db00ff' #pink keunguan / ungu kepink-an / yagitulah

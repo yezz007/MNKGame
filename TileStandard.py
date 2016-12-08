@@ -1,13 +1,28 @@
 from tkinter import *
 
 class TileStandard:
+    '''
+    Class yang mengendalikan kotak-kotak kecil di papan
+    '''
 
     def __init__(self, canvas, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs):
+        '''
+        canvas = canvas tempat kotaknya
+        xpos = koordinat x
+        ypos = koordinat y
+        size = ukuran kotaknya
+        neutralFill = warna kotak ketika Netral
+        outline = Garis pinggir
+        p1Color = warna marker p1
+        p2Color = warna marker p2
+        **kwargs yang berlaku => command = method yang dipanggil ketika kotak diklik
+        '''
         self.canvas = canvas
         self.xpos = xpos
         self.ypos = ypos
         self.size = size
         self.neutralFill = neutralFill
+        print(neutralFill)
         self.outline = outline
         self.p1Color = p1Color
         self.p2Color = p2Color
@@ -23,13 +38,17 @@ class TileStandard:
         self.flag = 99999999 #untuk menandai tile mana yang memenangkan permainan
 
     def getFlag(self):
+        '''
+        Mengambil nilai penanda
+        Untuk menandai pemenang gunanya
+        '''
         return self.flag
 
     def setFlag(self, intFlag):
+        '''
+        Memberi nilai flag
+        '''
         self.flag = intFlag
-
-    def getId(self):
-        return self.id
 
     def getOccupant(self):
         return self.occupant

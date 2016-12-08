@@ -22,8 +22,12 @@ class GameLogic:
         self.p2Name = 'Player 2'
         self.hasEventHelperChange = False
         self.hasEventOnWin = False
+        self.winner = 0
 
     def setupEvaluator(self, baris, kolom, menang, tiles, p1Name, p2Name, **kwargs):
+        '''
+        Mengatur ulang evaluator untuk permainan yang berbeda
+        '''
         self.baris = baris
         self.kolom = kolom
         self.menang = menang
@@ -34,14 +38,20 @@ class GameLogic:
         self.hasWinner = False
         self.hasEventHelperChange = False
         self.hasEventOnWin = False
+        self.winner = 0
+        #teks yang menunjukkan 'Giliran player 1'
         if 'helperChanger' in kwargs:
             self.hasEventHelperChange = True
             self.setHelperText = kwargs['helperChanger'] #dengan 1 argumen: text
+        #memanggil method ketika permainan berakhir
         if 'eventOnWin' in kwargs:
             self.hasEventOnWin = True
             self.eventOnWin = kwargs['eventOnWin']
 
     def updateHelper(self):
+        '''
+        Jika pada set up memperbolehkan untuk memberi teks bantuan, maka teks akan diubah
+        '''
         if self.hasEventHelperChange:
             if self.hasWinner:
                 self.setHelperText('Permainan sudah selesai. -->')
@@ -51,6 +61,9 @@ class GameLogic:
                 self.setHelperText('Giliran {}'.format(self.p2Name))
 
     def occupyTile(self, tile):
+        '''
+        Method yang ditrigger oleh event yang diatur class Tile
+        '''
         if not (tile.isOccupied() or self.hasWinner):
             if self.turn == 1:
                 occupantId = 1
@@ -259,11 +272,17 @@ class GameLogic:
                 i += self.kolom
 
     def win(self, winnerId, winnerFlag):
+        '''
+        Menghentikan kerja evaluator jika sudah menang
+        Menandai tiles yang bertanggung jawab untuk memenangkan game
+        '''
         self.hasWinner = True
         if winnerId == 1:
+            self.winner = 1
             if self.hasEventHelperChange:
                 self.setHelperText('{} Menang!'.format(self.p1Name))
         else:
+            self.winner = 2
             if self.hasEventHelperChange:
                 self.setHelperText('{} Menang!'.format(self.p2Name))
         print('win')
@@ -276,10 +295,36 @@ class GameLogic:
             self.eventOnWin()
 
     def getTilesOccupantList(self):
+        '''
+        Mereturn list yang berisikan integer yang merepresentasikan 'tile 1 diambil oleh player 1'
+        Berguna untuk save game
+        '''
         lisTileOccupant = []
         for tiles in self.tileObjList:
             lisTileOccupant.append(tiles.getOccupant())
         return lisTileOccupant
 
     def getCurrentTurn(self):
+        '''
+        Mengembalikan nilai variabel giliran untuk savegame
+        '''
         return self.turn
+
+    def getWinnerId(self):
+        '''
+        Mengembalikan variabel pemenang untuk savegame
+        '''
+        return self.winner
+
+    def continueFromSavedPoint(self, tileOccupants, turn):
+        '''
+        Mengaktifkan tile yang sudah diambil alih setelah load game
+        '''
+        for i in range(len(self.tileObjList)):
+            if tileOccupants[i] == 1:
+                self.tileObjList[i].occupy(1)
+            elif tileOccupants[i] == 2:
+                self.tileObjList[i].occupy(2)
+        self.turn = turn
+        self.updateHelper()
+        self.evaluate()
