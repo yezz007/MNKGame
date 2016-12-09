@@ -86,9 +86,7 @@ class BoardStandard(Frame):
         self.canvas.tag_bind(self.saveButton, "<Button-1>", self.onSaveButtonMouseClick)
 
     def onSaveGame(self, event):
-        '''
-        Jika ada event saveGame, panggil methodnya
-        '''
+        '''Jika ada event saveGame, panggil methodnya'''
         if self.canSaveGame:
             self.eventOnSaveGame()
 
@@ -96,9 +94,7 @@ class BoardStandard(Frame):
         self.crossBitmap.config(foreground='#1aff0e') #hijau muda
 
     def onWin(self):
-        '''
-        Mengubah warna ikon ketika menang
-        '''
+        '''Mengubah warna ikon ketika menang'''
         self.crossBitmap.config(foreground='red')
         self.saveBitmap.config(foreground='#0029ff')
         self.crossDefaultColor = 'red'
@@ -149,6 +145,7 @@ class BoardStandard(Frame):
         '''
         x = 5+self.extend
         y = 5
+        index = 0
         for i in range(self.baris):
             if i % 2 == 0:
                 color1 = self.neutralColor
@@ -162,18 +159,19 @@ class BoardStandard(Frame):
                     tileColor = color1
                 else:
                     tileColor = color2
-                if self.tileModel == 1:
-                    self.tileObjList.append(TileStandard(self.canvas, x, y, self.size,
+                if self.tileModel == 1: #pilih model tile
+                    self.tileObjList.append(TileStandard(self.canvas, index, x, y, self.size,
                     tileColor, self.squareBorder, self.p1Color, self.p2Color,
                     command=self.gameLogic.occupyTile))
                 elif self.tileModel == 2:
-                    self.tileObjList.append(TileExOu(self.canvas, x, y, self.size,
+                    self.tileObjList.append(TileExOu(self.canvas, index,  x, y, self.size,
                     tileColor, self.squareBorder, self.p1Color, self.p2Color,
                     command=self.gameLogic.occupyTile))
                 elif self.tileModel == 3:
-                    self.tileObjList.append(TileCoin(self.canvas, x, y, self.size,
+                    self.tileObjList.append(TileCoin(self.canvas, index,  x, y, self.size,
                     tileColor, self.squareBorder, self.p1Color, self.p2Color,
                     command=self.gameLogic.occupyTile))
+                index += 1
                 x += self.size
             y += self.size
         self.gameLogic.setupEvaluator(self.baris, self.kolom, self.menang, self.tileObjList,

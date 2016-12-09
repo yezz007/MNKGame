@@ -5,7 +5,7 @@ class TileStandard:
     Class yang mengendalikan kotak-kotak kecil di papan
     '''
 
-    def __init__(self, canvas, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs):
+    def __init__(self, canvas, index, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs):
         '''
         canvas = canvas tempat kotaknya
         xpos = koordinat x
@@ -18,6 +18,7 @@ class TileStandard:
         **kwargs yang berlaku => command = method yang dipanggil ketika kotak diklik
         '''
         self.canvas = canvas
+        self.index = index
         self.xpos = xpos
         self.ypos = ypos
         self.size = size
@@ -35,20 +36,6 @@ class TileStandard:
         if 'command' in kwargs:
             self.hasCommand = True
             self.command = kwargs['command']
-        self.flag = 99999999 #untuk menandai tile mana yang memenangkan permainan
-
-    def getFlag(self):
-        '''
-        Mengambil nilai penanda
-        Untuk menandai pemenang gunanya
-        '''
-        return self.flag
-
-    def setFlag(self, intFlag):
-        '''
-        Memberi nilai flag
-        '''
-        self.flag = intFlag
 
     def getOccupant(self):
         return self.occupant
@@ -74,4 +61,4 @@ class TileStandard:
 
     def onClick(self, event):
         if self.hasCommand:
-            self.command(self)
+            self.command(self.index)

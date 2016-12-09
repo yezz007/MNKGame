@@ -63,6 +63,7 @@ class MNKGame:
         print("Menu shown")
         self.menuFrame = Frame(self.window)
         self.menuFrame.pack(padx=5, pady=100)
+        Label(self.menuFrame, text='M N K Game', font='Helvetica 42 bold').pack()
         self.loadGameButton = GoodButton(self.menuFrame, text='Lanjutkan Permainan', command=self.showLoadGameMenu)
         self.loadGameButton.pack(padx=5, pady=5)
         self.quickStartButton = GoodButton(self.menuFrame, text='Mulai Permainan Baru', command=self.quickStartGame)

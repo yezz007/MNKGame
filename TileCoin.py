@@ -5,8 +5,8 @@ class TileCoin(TileStandard):
     '''
     Versi X O dari tiles
     '''
-    def __init__(self, canvas, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs):
-        super().__init__(canvas, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs)
+    def __init__(self, canvas, index,  xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs):
+        super().__init__(canvas, index, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs)
 
     #override
     def occupy(self, intOccupantId):
