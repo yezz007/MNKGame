@@ -4,7 +4,6 @@ from BoardDark import *
 from GameLogic import *
 from GoodButton import *
 from tkinter import messagebox
-import GameLoader
 
 class MNKGame:
     '''
@@ -31,15 +30,21 @@ class MNKGame:
         self.namaP1.set("Player 1")
         self.namaP2.set("Player 2")
         self.loadSettings()
+        print('hehe')
         self.showMenu()
         self.logic = GameLogic()
         self.window.mainloop()
 
     def loadSettings(self):
-        '''
-        Memuat settings sebelumnya, supaya user tidak perlu repot-repot lagi :)
-        '''
-        dataList = GameLoader.loadSettings()
+        '''Memuat settings sebelumnya, supaya user tidak perlu repot-repot lagi :)'''
+        try:
+            settingFile = open("saveGame.mnk", 'r')
+            dataLines = settingFile.read().split('\n')
+            dataList = dataLines[0].split(';')
+        except:
+            #Sebagai tanda bahwa telah gagal untuk memuat settings
+            dataList = [3, 3, 3, 1, 2, 'Player 1', 'Player 2']
+        print('settings: ', dataList)
         self.n.set(dataList[0])
         self.m.set(dataList[1])
         self.k.set(dataList[2])
@@ -61,6 +66,7 @@ class MNKGame:
         Menampilkan menu utama
         '''
         print("Menu shown")
+        self.fixWindowSize()
         self.menuFrame = Frame(self.window)
         self.menuFrame.pack(padx=5, pady=100)
         Label(self.menuFrame, text='M N K Game', font='Helvetica 42 bold').pack()
@@ -72,29 +78,43 @@ class MNKGame:
         self.setUpButton.pack(padx=5, pady=5)
 
     def showLoadGameMenu(self):
+        savedGameList = self.loadGame()
+        if len(savedGameList) == 0:
+            messagebox.showinfo("Load Game", "Kamu belum pernah menyimpan permainan :(")
+            return
         self.games = []
+        self.window.minsize(width=800, height=640)
+        self.window.maxsize(width=800, height=640)
         self.chooseGame = IntVar()
-        savedGameList = GameLoader.loadGame()
         self.hideMenu()
         self.loadFrame = Frame(self.window)
         self.loadFrame.pack(padx=5, pady=5)
+        gameListFrame = Frame(self.loadFrame)
+        gameListFrame.pack(padx=5, pady=5)
+        Label(gameListFrame, text='No.').grid(padx=5, pady=5, row=0, column=0)
+        Label(gameListFrame, text='Player 1').grid(padx=5, pady=5, row=0, column=1)
+        Label(gameListFrame, text='Player 2').grid(padx=5, pady=5, row=0, column=3)
+        Label(gameListFrame, text='Pemenang').grid(padx=5, pady=5, row=0, column=4)
         savedGames = 0
-        print(len(savedGameList))
-        for i in range(len(savedGameList)-1, 0, -1):
+        for i in range(len(savedGameList)-1, 0, -1): #mulai dari yang paling baru
             if savedGames >= 10:
                 messagebox.showinfo("Terlalu Banyak Permainan Tersimpan", "Kami Hanya Menampilkan 10 Permainan Terkini")
                 break
-            if len(savedGameList[i]) == 10:
+            if len(savedGameList[i]) == 11:
                 self.games.append(savedGameList[i])
                 p1Name = savedGameList[i][5]
                 p2Name = savedGameList[i][6]
                 pemenang = 'Belum Ada'
-                if savedGameList[i][9] == 1:
+                if savedGameList[i][-1] == 1:
                     pemenang = p1Name
-                elif savedGameList[i][9] == 2:
+                elif savedGameList[i][-1] == 2:
                     pemenang = p2Name
-                Radiobutton(self.loadFrame, font='Helvetica 16', value=savedGames,
-                variable=self.chooseGame, text='{} vs {} - Pemenang = {}'.format(p1Name, p2Name, pemenang)).pack(padx=5, pady=5, anchor=W)
+                Radiobutton(gameListFrame, font='Helvetica 14', value=savedGames,
+                variable=self.chooseGame, text=str(savedGames+1)).grid(padx=5, pady=5, row=savedGames+1, column=0, sticky=W)
+                Label(gameListFrame, font='Helvetica 14', text=p1Name).grid(padx=5, pady=5, row=savedGames+1, column=1)
+                Label(gameListFrame, font='Helvetica 14', text='vs').grid(padx=5, pady=5, row=savedGames+1, column=2)
+                Label(gameListFrame, font='Helvetica 14', text=p2Name).grid(padx=5, pady=5, row=savedGames+1, column=3)
+                Label(gameListFrame, font='Helvetica 14', text=pemenang).grid(padx=5, pady=5, row=savedGames+1, column=4)
                 savedGames += 1
             else:
                 print('Not a valid game data')
@@ -106,6 +126,7 @@ class MNKGame:
         self.showMenu()
 
     def playSavedGame(self):
+        '''Memainkan game yang sudah pernah disave'''
         self.loadFrame.destroy()
         print(self.games)
         gameId = self.chooseGame.get()
@@ -116,6 +137,7 @@ class MNKGame:
         tileModel = self.games[gameId][4]
         namaP1 = self.games[gameId][5]
         namaP2 = self.games[gameId][6]
+        lastOccupiedTileIndex = self.games[gameId][-2]
         size1 = (self.screenHeight - 120) // baris
         size2 = (self.screenWidth - 120) // kolom
         extend = 0 #blank space canvas, supaya tulisan muat
@@ -131,7 +153,7 @@ class MNKGame:
         turn = self.games[gameId][-2]
         for char in tileOccupantStr:
             tileOccupantList.append(int(char))
-        self.logic.continueFromSavedPoint(tileOccupantList, turn)
+        self.logic.continueFromSavedPoint(tileOccupantList, turn, lastOccupiedTileIndex)
         self.n.set(baris)
         self.m.set(kolom)
         self.theme.set(theme)
@@ -162,6 +184,8 @@ class MNKGame:
             self.namaP2.set("Player 1")
         self.hideMenu()
         self.startGame(self.n.get(), self.m.get(), size, extend, self.k.get(),
+        self.theme.get(), self.tileId.get(), self.namaP1.get(), self.namaP2.get())
+        self.saveSettings(self.n.get(), self.m.get(), self.k.get(),
         self.theme.get(), self.tileId.get(), self.namaP1.get(), self.namaP2.get())
 
     def showSetUpMenu(self):
@@ -230,9 +254,7 @@ class MNKGame:
             btCoin.select()
 
     def setUpCancel(self):
-        '''
-        Membatalkan set up game dan kembali ke menu utama
-        '''
+        '''Membatalkan set up game dan kembali ke menu utama'''
         self.setUpFrame.destroy()
         self.showMenu()
 
@@ -286,15 +308,11 @@ class MNKGame:
         self.saveSettings(baris, kolom, menang, theme, tile, namaP1, namaP2)
 
     def saveSettings(self, baris, kolom, menang, theme, tileModel, namaP1, namaP2):
-        '''
-        Menyimpan settings agar kedepannya user tidak perlu banyak klik
-        '''
-        GameLoader.saveSettings(baris, kolom, menang, theme, tileModel, namaP1, namaP2)
+        '''Menyimpan settings agar kedepannya user tidak perlu banyak klik'''
+        self.saveSettings(baris, kolom, menang, theme, tileModel, namaP1, namaP2)
 
     def startGame(self, baris, kolom, size, extend, win, theme, tileModel, namaP1, namaP2):
-        '''
-        Mulai permainannya di sini, memilih papan juga di sini
-        '''
+        '''Mulai permainannya di sini, memilih papan juga di sini'''
         #memastikan window ada di paling atas
         self.window.geometry("{}x{}+{}+{}".format(self.screenWidth, self.screenHeight, 0, 0))
         if theme == 1:
@@ -310,24 +328,74 @@ class MNKGame:
         tileList = self.logic.getTilesOccupantList()
         turn = self.logic.getCurrentTurn()
         pemenang = self.logic.getWinnerId()
-        isSaveSuccess = GameLoader.saveGame(self.n.get(), self.m.get(), self.k.get(),
-        self.theme.get(), self.tileId.get(), self.namaP1.get(), self.namaP2.get(), tileList, turn, pemenang)
+        lastTile = self.logic.getLastOccupiedTile()
+        isSaveSuccess = self.saveGame(self.n.get(), self.m.get(), self.k.get(),
+        self.theme.get(), self.tileId.get(), self.namaP1.get(), self.namaP2.get(), tileList, turn, lastTile, pemenang)
         if isSaveSuccess:
             messagebox.showinfo("Permainan Berhasil Disimpan", "Permainan ini telah berhasil disimpan")
         else:
             messagebox.showinfo("Permainan Gagal Disimpan", "Kami tidak bisa menyimpan permainan ini :(")
 
     def endGame(self):
-        '''
-        Akhir permainan dipicu oleh event yang diatur oleh kelas papan permainan
-        '''
+        '''Akhir permainan dipicu oleh event yang diatur oleh kelas papan permainan'''
         self.board.destroy()
         print("Board Destroyed")
-        self.fixWindowSize()
         self.showMenu()
 
     def hideMenu(self):
-        '''
-        Menyembunyikan menu utama
-        '''
+        '''Menyembunyikan menu utama'''
         self.menuFrame.destroy()
+
+    def saveSettings(self, baris=3, kolom=3, menang=3, theme=1, tileModel=2, p1='Player 1', p2='Player 2'):
+        try:
+            readSettingFile  = open("saveGame.mnk", 'r')
+            dataLines = readSettingFile.read().split('\n')
+            readSettingFile.close()
+        except:
+            dataLines = ['']
+        try:
+            writeSettingFile = open('saveGame.mnk', 'w')
+        except:
+            return False
+        dataLines[0] = '{};{};{};{};{};{};{}'.format(baris, kolom, menang, theme, tileModel, p1, p2)
+        for lines in dataLines:
+            writeSettingFile.write(lines + '\n')
+        writeSettingFile.close()
+        return True
+
+    def saveGame(self, baris, kolom, menang, theme, tileModel, namaP1, namaP2, tileOccupyList, giliran, lastOccupiedTileIndex, pemenang):
+        '''
+        Menyimpan permainan.
+        Return False jika gagal, jika sukses return True
+        '''
+        try:
+            appendSettingFile = open('saveGame.mnk', 'a')
+        except:
+            return False
+        saveDataLine = '{};{};{};{};{};{};{};{};{};{};{}\n'.format(baris, kolom, menang,
+        theme, tileModel, namaP1, namaP2, tileOccupyList, giliran, lastOccupiedTileIndex, pemenang).replace('[', '').replace(']', '')
+        appendSettingFile.write(saveDataLine)
+        appendSettingFile.close()
+        return True
+
+    def loadGame(self):
+        '''
+        Memuat Permainan
+        Return list kosong jika gagal
+        '''
+        try:
+            readSettingFile = open('saveGame.mnk', 'r')
+        except:
+            return []
+        saveDataLines = readSettingFile.read().split('\n')
+        savedGameList = []
+        for line in saveDataLines:
+            splitedStr = line.split(';')
+            savedGameDataList = []
+            for data in splitedStr:
+                try:
+                    savedGameDataList.append(int(data))
+                except ValueError:
+                    savedGameDataList.append(data)
+            savedGameList.append(savedGameDataList)
+        return savedGameList

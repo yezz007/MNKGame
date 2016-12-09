@@ -23,6 +23,7 @@ class GameLogic:
         self.hasEventHelperChange = False
         self.hasEventOnWin = False
         self.winner = 0
+        self.lastOccupiedTileIndex = 0
 
     def setupEvaluator(self, baris, kolom, menang, tiles, p1Name, p2Name, **kwargs):
         '''
@@ -75,6 +76,7 @@ class GameLogic:
             self.tileObjList[tileIndex].occupy(occupantId)
             self.updateHelper()
             self.evaluate(tileIndex)
+            self.lastOccupiedTileIndex = tileIndex
         else:
             self.updateHelper()
 
@@ -207,12 +209,13 @@ class GameLogic:
         return self.turn
 
     def getWinnerId(self):
-        '''
-        Mengembalikan variabel pemenang untuk savegame
-        '''
+        '''Mengembalikan status pemenang untuk savegame'''
         return self.winner
 
-    def continueFromSavedPoint(self, tileOccupants, turn):
+    def getLastOccupiedTile(self):
+        return self.lastOccupiedTileIndex
+
+    def continueFromSavedPoint(self, tileOccupants, turn, lastOccupiedTileIndex):
         '''
         Mengaktifkan tile yang sudah diambil alih setelah load game
         '''
@@ -223,4 +226,4 @@ class GameLogic:
                 self.tileObjList[i].occupy(2)
         self.turn = turn
         self.updateHelper()
-        self.evaluate()
+        self.evaluate(lastOccupiedTileIndex)
