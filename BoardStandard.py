@@ -10,6 +10,19 @@ class BoardStandard(Frame):
     Versi standarnya. Kalau mau menambah versi lain, turunkan dari kelas ini.
     '''
     def __init__(self, parent, logic, baris, kolom, menang, extend, tileModel, squareSize=50, **kwargs):
+        '''
+        parent = tempat widget ini diletakkan
+        logic = otak permainan
+        baris, kolom, menang = jumlahnya
+        extend = ekstensi canvas agar teks 'giliran player 1' muat di layar
+        tileModel = model tile 1:warna-warni; 2:X dan O, 3: Koin
+        squareSize = ukuran tile
+        **kwargs:
+            eventOnEndGame: method yang akan dipanggil setelah user klik 'exit'
+            eventOnSaveGame: method yang akan dipanggil setelah user klik 'save'
+            p1Name: nama pemain pertama
+            p2Name: nama pemain kedua
+        '''
         super().__init__(parent)
         self.pack()
         self.gameLogic = logic
@@ -50,22 +63,16 @@ class BoardStandard(Frame):
         print("Board built", self)
 
     def createHelper(self):
-        '''
-        Menginstansiasi teks pembantu yang menampilkan 'Giliran player 1'
-        '''
+        '''Menginstansiasi teks pembantu yang menampilkan 'Giliran player 1'''
         self.helper = self.canvas.create_text(((self.kolom*self.size)//2)+self.extend, (self.baris*self.size)+20,
         font = 'Helvetica 16', fill=self.neutralColor, text='Giliran {}'.format(self.p1Name))
 
     def setHelperText(self, txt):
-        '''
-        Method yang mengubah teks helper
-        '''
+        '''Method yang mengubah teks helper'''
         self.canvas.itemconfigure(self.helper, text=txt)
 
     def createButtons(self):
-        '''
-        Membuat tombol-tombol
-        '''
+        '''Membuat tombol-tombol'''
         self.crossDefaultColor = self.neutralColor
         self.crossMouseOverColor = 'red'
         self.saveDefaultColor = self.neutralColor
@@ -90,9 +97,6 @@ class BoardStandard(Frame):
         if self.canSaveGame:
             self.eventOnSaveGame()
 
-    def onEndButtonMouseClick(self, event):
-        self.crossBitmap.config(foreground='#1aff0e') #hijau muda
-
     def onWin(self):
         '''Mengubah warna ikon ketika menang'''
         self.crossBitmap.config(foreground='red')
@@ -101,6 +105,11 @@ class BoardStandard(Frame):
         self.crossMouseOverColor = '#ff5c00' #merah kekuningan
         self.saveDefaultColor = '#0029ff' #biru cerah
         self.saveMouseOverColor = '#31b8cd' #biru langit
+
+    #----------6 method berikut membuat tombol menjadi warna-warni ketika didekati kursor---------
+
+    def onEndButtonMouseClick(self, event):
+        self.crossBitmap.config(foreground='#1aff0e') #hijau muda
 
     def onEndButtonMouseEnter(self, event):
         self.crossBitmap.config(foreground=self.crossMouseOverColor)
@@ -131,18 +140,14 @@ class BoardStandard(Frame):
         self.p2Color = 'red'
 
     def onEndGame(self, event):
-        '''
-        Ketika permainan berakhir, panggil method yang sudah dipass
-        '''
+        '''Ketika permainan berakhir, panggil method yang sudah dipass'''
         self.tileObjList.clear()
         self.canvas.delete("all")
         if self.fireEventOnEnd:
             self.eventOnEnd()
 
     def populateBoard(self):
-        '''
-        Mengisi papan permainan dengan tiles
-        '''
+        '''Mengisi papan permainan dengan tiles'''
         x = 5+self.extend
         y = 5
         index = 0

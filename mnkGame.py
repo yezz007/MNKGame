@@ -13,26 +13,28 @@ class MNKGame:
     def __init__(self, screenWidth, screenHeight):
         '''
         Constructor
-        Semua atribut kelas terlihat di sini
+        screenWidth: panjang layar monitor
+        screenHeight: lebar layar monitor
         '''
         self.window = Tk()
         self.window.title("MNK Game")
+        self.window.iconbitmap(default='mnk.ico')
         self.screenWidth = screenWidth
         self.screenHeight = screenHeight
         self.fixWindowSize()
         self.m = IntVar() #kolom
         self.n = IntVar() #baris
         self.k = IntVar() #menang
-        self.theme = IntVar()
-        self.tileId = IntVar()
-        self.namaP1 = StringVar()
-        self.namaP2 = StringVar()
+        self.theme = IntVar() #tema papan
+        self.tileId = IntVar() #model tile
+        self.namaP1 = StringVar() #nama pemain pertama
+        self.namaP2 = StringVar() #nama pemain kedua
         self.namaP1.set("Player 1")
         self.namaP2.set("Player 2")
         self.loadSettings()
         print('hehe')
         self.showMenu()
-        self.logic = GameLogic()
+        self.logic = GameLogic() #otak permainan
         self.window.mainloop()
 
     def loadSettings(self):
@@ -55,16 +57,12 @@ class MNKGame:
 
 
     def fixWindowSize(self):
-        '''
-        Mengatur ukuran window
-        '''
+        '''Mengatur ukuran window'''
         self.window.minsize(width=800, height=600)
         self.window.maxsize(width=800, height=600)
 
     def showMenu(self):
-        '''
-        Menampilkan menu utama
-        '''
+        '''Menampilkan menu utama'''
         print("Menu shown")
         self.fixWindowSize()
         self.menuFrame = Frame(self.window)
@@ -78,13 +76,14 @@ class MNKGame:
         self.setUpButton.pack(padx=5, pady=5)
 
     def showLoadGameMenu(self):
+        '''Menampilkan menu untuk memuat permainan'''
         savedGameList = self.loadGame()
         if len(savedGameList) == 0:
             messagebox.showinfo("Load Game", "Kamu belum pernah menyimpan permainan :(")
             return
         self.games = []
-        self.window.minsize(width=800, height=640)
-        self.window.maxsize(width=800, height=640)
+        self.window.minsize(width=800, height=660)
+        self.window.maxsize(width=800, height=660)
         self.chooseGame = IntVar()
         self.hideMenu()
         self.loadFrame = Frame(self.window)
@@ -98,7 +97,7 @@ class MNKGame:
         savedGames = 0
         for i in range(len(savedGameList)-1, 0, -1): #mulai dari yang paling baru
             if savedGames >= 10:
-                messagebox.showinfo("Terlalu Banyak Permainan Tersimpan", "Kami Hanya Menampilkan 10 Permainan Terkini")
+                Label(self.loadFrame, text='Karena terlalu banyak permainan yang tersimpan, kami hanya menampilkan 10 permainan terbaru', font='Helvetica 12').pack(padx=5, pady=5)
                 break
             if len(savedGameList[i]) == 11:
                 self.games.append(savedGameList[i])
@@ -109,6 +108,8 @@ class MNKGame:
                     pemenang = p1Name
                 elif savedGameList[i][-1] == 2:
                     pemenang = p2Name
+                elif savedGameList[i][-1] == -1:
+                    pemenang = 'Tidak ada'
                 Radiobutton(gameListFrame, font='Helvetica 14', value=savedGames,
                 variable=self.chooseGame, text=str(savedGames+1)).grid(padx=5, pady=5, row=savedGames+1, column=0, sticky=W)
                 Label(gameListFrame, font='Helvetica 14', text=p1Name).grid(padx=5, pady=5, row=savedGames+1, column=1)
@@ -122,8 +123,26 @@ class MNKGame:
         GoodButton(self.loadFrame, text='Kembali', command=self.hideLoadGameMenu).pack(padx=5, pady=5)
 
     def hideLoadGameMenu(self):
+        '''Menyembunyikan menu load game'''
         self.loadFrame.destroy()
         self.showMenu()
+
+    def getResponsiveTileSize(self, baris, kolom):
+        '''Menentukan ukuran tile agar muat di layar monitor'''
+        size1 = (self.screenHeight - 120) // baris
+        size2 = (self.screenWidth - 120) // kolom
+        if size1 > size2: #Menentukan yang paling kecil
+            size = size2
+        else:
+            size = size1
+        return size
+
+    def getCanvasExtensionSize(self, kolom, tileSize):
+        '''Memastikan agar nantinya teks 'giliran player 1' muat di layar'''
+        extend = 0
+        if tileSize*kolom < 200:
+            extend = 200
+        return extend
 
     def playSavedGame(self):
         '''Memainkan game yang sudah pernah disave'''
@@ -138,22 +157,16 @@ class MNKGame:
         namaP1 = self.games[gameId][5]
         namaP2 = self.games[gameId][6]
         lastOccupiedTileIndex = self.games[gameId][-2]
-        size1 = (self.screenHeight - 120) // baris
-        size2 = (self.screenWidth - 120) // kolom
-        extend = 0 #blank space canvas, supaya tulisan muat
-        if size1 > size2:
-            size = size2
-        else:
-            size = size1
-        if size*kolom < 200:
-            extend = 200
+        winner = self.games[gameId][-1]
+        size = self.getResponsiveTileSize(baris, kolom)
+        extend = self.getCanvasExtensionSize(kolom, size)
         self.startGame(baris, kolom, size, extend, menang, theme, tileModel, namaP1, namaP2)
         tileOccupantStr = self.games[gameId][7].split(',')
         tileOccupantList = []
         turn = self.games[gameId][-2]
         for char in tileOccupantStr:
             tileOccupantList.append(int(char))
-        self.logic.continueFromSavedPoint(tileOccupantList, turn, lastOccupiedTileIndex)
+        self.logic.continueFromSavedPoint(tileOccupantList, turn, lastOccupiedTileIndex, winner)
         self.n.set(baris)
         self.m.set(kolom)
         self.theme.set(theme)
@@ -162,26 +175,15 @@ class MNKGame:
         self.namaP1.set(namaP1)
         self.namaP2.set(namaP2)
 
-
     def quickStartGame(self):
         '''
         Langsung memulai permainan,
         User tidak perlu repot-repot klik ini itu, LANGSUNG main
         *Menggunakan settings sebelumnya untuk pengalaman user yang lebih baik
         '''
-        size1 = (self.screenHeight - 120) // (self.n.get())
-        size2 = (self.screenWidth - 120) // (self.m.get())
-        extend = 0 #blank space canvas, supaya tulisan muat
-        if size1 > size2:
-            size = size2
-        else:
-            size = size1
-        if size*self.m.get() < 200:
-            extend = 200
-        if len(self.namaP1.get()) >= 10:
-            self.namaP1.set("Player 1")
-        if len(self.namaP2.get()) >= 10:
-            self.namaP2.set("Player 1")
+        self.loadSettings()
+        size = self.getResponsiveTileSize(self.n.get(), self.m.get())
+        extend = self.getCanvasExtensionSize(self.m.get(), size)
         self.hideMenu()
         self.startGame(self.n.get(), self.m.get(), size, extend, self.k.get(),
         self.theme.get(), self.tileId.get(), self.namaP1.get(), self.namaP2.get())
@@ -242,6 +244,7 @@ class MNKGame:
         btBack = GoodButton(self.setUpFrame, text='Kembali', command=self.setUpCancel)
         btSetUpStart.pack(padx=5, pady=5)
         btBack.pack(padx=5, pady=3)
+        #memilih Radiobutton yang sebelumnya sudah terpilih
         if self.theme.get() == 1:
             btBright.select()
         else:
@@ -276,7 +279,6 @@ class MNKGame:
         except:
             messagebox.showerror("Kesalahan Input", "Periksa kembali input yang Anda berikan!")
             return
-        extend = 0 #blank space canvas, supaya tulisan muat
         if menang <= 1 or kolom <= 1 or baris <= 1: #Input aneh
             messagebox.showerror("Peraturan Kacau", "Periksa kembali input yang Anda berikan!")
             return
@@ -288,14 +290,8 @@ class MNKGame:
             return
         if (kolom < menang) or (baris < menang): #hanya Mengingatkan user
             messagebox.showwarning("Hanya Mengingatkan", "Permainan tidak mungkin dimenangkan dengan cara menguasai kotak-kotak secara diagonal.")
-        size1 = (self.screenHeight - 120) // (baris)
-        size2 = (self.screenWidth - 120) // (kolom)
-        if size1 > size2:
-            size = size2
-        else:
-            size = size1
-        if size*kolom < 200:
-            extend = 200
+        size = self.getResponsiveTileSize(baris, kolom)
+        extend = self.getCanvasExtensionSize(kolom, size)
         if size < 25:
             messagebox.showerror("Layar Tidak Muat", "Layar monitor kamu tidak muat untuk memainkan game dengan setting ini :(")
             return
@@ -325,6 +321,7 @@ class MNKGame:
         self.window.maxsize(width=(kolom*size)+12+extend, height=(baris*size)+42)
 
     def onSaveGame(self):
+        '''Terpanggil oleh eventOnSaveGame pada class Board; Menyimpan permainan'''
         tileList = self.logic.getTilesOccupantList()
         turn = self.logic.getCurrentTurn()
         pemenang = self.logic.getWinnerId()
@@ -347,6 +344,7 @@ class MNKGame:
         self.menuFrame.destroy()
 
     def saveSettings(self, baris=3, kolom=3, menang=3, theme=1, tileModel=2, p1='Player 1', p2='Player 2'):
+        '''Menyimpan settings permainan ke file 'saveGame.mnk'''
         try:
             readSettingFile  = open("saveGame.mnk", 'r')
             dataLines = readSettingFile.read().split('\n')
@@ -358,16 +356,14 @@ class MNKGame:
         except:
             return False
         dataLines[0] = '{};{};{};{};{};{};{}'.format(baris, kolom, menang, theme, tileModel, p1, p2)
+        #hanya mengganti baris pertamanya
         for lines in dataLines:
             writeSettingFile.write(lines + '\n')
         writeSettingFile.close()
         return True
 
     def saveGame(self, baris, kolom, menang, theme, tileModel, namaP1, namaP2, tileOccupyList, giliran, lastOccupiedTileIndex, pemenang):
-        '''
-        Menyimpan permainan.
-        Return False jika gagal, jika sukses return True
-        '''
+        '''Menyimpan permainan.; Return False jika gagal, jika sukses return True'''
         try:
             appendSettingFile = open('saveGame.mnk', 'a')
         except:
@@ -379,10 +375,7 @@ class MNKGame:
         return True
 
     def loadGame(self):
-        '''
-        Memuat Permainan
-        Return list kosong jika gagal
-        '''
+        '''Memuat Permainan; Return list kosong jika gagal'''
         try:
             readSettingFile = open('saveGame.mnk', 'r')
         except:

@@ -2,7 +2,7 @@ from tkinter import *
 
 class TileStandard:
     '''
-    Class yang mengendalikan kotak-kotak kecil di papan
+    Class yang mengatur kotak-kotak kecil di papan
     '''
 
     def __init__(self, canvas, index, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs):
@@ -23,7 +23,6 @@ class TileStandard:
         self.ypos = ypos
         self.size = size
         self.neutralFill = neutralFill
-        print(neutralFill)
         self.outline = outline
         self.p1Color = p1Color
         self.p2Color = p2Color
@@ -38,21 +37,25 @@ class TileStandard:
             self.command = kwargs['command']
 
     def getOccupant(self):
+        '''Mengembalikan kode pemain yang mengambil alih tile'''
         return self.occupant
 
     def isOccupied(self):
+        '''Mendeteksi apakah tile ini sudah diambil alih atau belum'''
         return (self.occupant != 0)
 
-    def occupy(self, intOccupantId):
-        if intOccupantId == 1:
+    def occupy(self, occupantId):
+        '''Mengambil alih tile ini oleh occupantId'''
+        if occupantId == 1:
             color = self.p1Color
             self.occupant = 1
-        elif intOccupantId == 2:
+        elif occupantId == 2:
             color = self.p2Color
             self.occupant = 2
         self.canvas.itemconfigure(self.id, fill=color)
 
     def markWinner(self):
+        '''Menandai bahwa tile ini lah yang memenangkan permainan'''
         markSize = self.size // 3
         markX = (self.xpos + markSize)
         markY = (self.ypos + markSize)
@@ -60,5 +63,6 @@ class TileStandard:
         markX + markSize, markY + markSize, fill=self.neutralFill)
 
     def onClick(self, event):
+        '''Memanggil method yang sudah dipass ketika tile diklik'''
         if self.hasCommand:
             self.command(self.index)

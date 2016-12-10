@@ -8,7 +8,6 @@ class TileCoin(TileStandard):
     def __init__(self, canvas, index,  xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs):
         super().__init__(canvas, index, xpos, ypos, size, neutralFill, outline, p1Color, p2Color, **kwargs)
 
-    #override
     def occupy(self, intOccupantId):
         coinSize = self.size // 2
         coinX = (self.xpos + (coinSize // 2))
