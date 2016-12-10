@@ -32,7 +32,6 @@ class MNKGame:
         self.namaP1.set("Player 1")
         self.namaP2.set("Player 2")
         self.loadSettings()
-        print('hehe')
         self.showMenu()
         self.logic = GameLogic() #otak permainan
         self.window.mainloop()
@@ -46,7 +45,6 @@ class MNKGame:
         except:
             #Sebagai tanda bahwa telah gagal untuk memuat settings
             dataList = [3, 3, 3, 1, 2, 'Player 1', 'Player 2']
-        print('settings: ', dataList)
         self.n.set(dataList[0])
         self.m.set(dataList[1])
         self.k.set(dataList[2])
@@ -63,7 +61,6 @@ class MNKGame:
 
     def showMenu(self):
         '''Menampilkan menu utama'''
-        print("Menu shown")
         self.fixWindowSize()
         self.menuFrame = Frame(self.window)
         self.menuFrame.pack(padx=5, pady=100)
@@ -117,10 +114,11 @@ class MNKGame:
                 Label(gameListFrame, font='Helvetica 14', text=p2Name).grid(padx=5, pady=5, row=savedGames+1, column=3)
                 Label(gameListFrame, font='Helvetica 14', text=pemenang).grid(padx=5, pady=5, row=savedGames+1, column=4)
                 savedGames += 1
-            else:
-                print('Not a valid game data')
         GoodButton(self.loadFrame, text='Lanjutkan Permainan', command=self.playSavedGame).pack(padx=5, pady=5)
         GoodButton(self.loadFrame, text='Kembali', command=self.hideLoadGameMenu).pack(padx=5, pady=5)
+        if savedGames == 0:
+            self.hideLoadGameMenu()
+            messagebox.showinfo("Tidak bisa load game", "Belum ada permainan yang disimpan.")
 
     def hideLoadGameMenu(self):
         '''Menyembunyikan menu load game'''
@@ -147,7 +145,6 @@ class MNKGame:
     def playSavedGame(self):
         '''Memainkan game yang sudah pernah disave'''
         self.loadFrame.destroy()
-        print(self.games)
         gameId = self.chooseGame.get()
         baris = self.games[gameId][0]
         kolom = self.games[gameId][1]
@@ -277,16 +274,16 @@ class MNKGame:
             namaP1 = self.namaP1.get()
             namaP2 = self.namaP2.get()
         except:
-            messagebox.showerror("Kesalahan Input", "Periksa kembali input yang Anda berikan!")
+            messagebox.showerror("Kesalahan Input", "Anda Melakukan Kesalahan Input.\nPeriksa kembali input yang Anda berikan!")
             return
         if menang <= 1 or kolom <= 1 or baris <= 1: #Input aneh
-            messagebox.showerror("Peraturan Kacau", "Periksa kembali input yang Anda berikan!")
+            messagebox.showerror("Peraturan Kacau", "Peraturan:\nBaris = {}\nKolom = {}\nMenang = {}\nBukanlah peraturan yang sah!".format(baris, kolom, menang))
             return
-        elif menang <= 2 and kolom <= 2 and baris <= 2: #Pasti pemain yang mendapatkan giliran pertama yang menang
+        elif menang == 2 and kolom == 2 and baris == 2: #Pasti pemain yang mendapatkan giliran pertama yang menang
             messagebox.showinfo("Peraturan Lemah", "Sudah pasti pemain yang mendapatkan giliran pertama yang menang")
             return
         if kolom < menang and baris < menang: #Ini yang paling kacau, tidak perlu main kalau begini
-            messagebox.showerror("Peraturan Kacau", "Permainan tidak dapat dimenangkan oleh siapa pun!")
+            messagebox.showerror("Peraturan Kacau", "Dengan peraturan:\nBaris = {}\nKolom = {}\nMenang = {}\nTidak dapat dimenangkan oleh siapapun!".format(baris, kolom, menang))
             return
         if (kolom < menang) or (baris < menang): #hanya Mengingatkan user
             messagebox.showwarning("Hanya Mengingatkan", "Permainan tidak mungkin dimenangkan dengan cara menguasai kotak-kotak secara diagonal.")
@@ -336,7 +333,6 @@ class MNKGame:
     def endGame(self):
         '''Akhir permainan dipicu oleh event yang diatur oleh kelas papan permainan'''
         self.board.destroy()
-        print("Board Destroyed")
         self.showMenu()
 
     def hideMenu(self):

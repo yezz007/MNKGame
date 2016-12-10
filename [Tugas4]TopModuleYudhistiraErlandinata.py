@@ -13,7 +13,6 @@ try:
     width = GetSystemMetrics(0)
     height = GetSystemMetrics(1)
 except: #bukan sistem windows
-    print("Cannot load win32api")
     width = 800
     height = 600
 MNKGame(width, height)

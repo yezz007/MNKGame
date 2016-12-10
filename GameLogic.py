@@ -88,7 +88,7 @@ class GameLogic:
         currentOccupant = self.tileObjList[index].getOccupant() #pemain yang mengambil alih
         winnerList = [index] #untuk menandai tile yang membantu menang
         #==============ke kiri===============#
-        idx = index - 1 
+        idx = index - 1
         count = 1
         while((idx >= self.kolom*(index//self.kolom)) and
         count < self.menang):
@@ -106,7 +106,6 @@ class GameLogic:
             count += 1
             winnerList.append(idx)
             idx += 1
-        print(winnerList)
         if count >= self.menang:
             self.win(currentOccupant, winnerList)
             return
@@ -129,7 +128,6 @@ class GameLogic:
             count += 1
             winnerList.append(idx)
             idx += self.kolom
-        print(winnerList)
         if count >= self.menang:
             self.win(currentOccupant, winnerList)
             return
@@ -143,7 +141,6 @@ class GameLogic:
             count += 1
             winnerList.append(idx)
             idx -= (self.kolom + 1)
-            print(idx)
         #==============diagonal kanan ke bawah===============#
         idx = index + self.kolom + 1
         while((idx % self.kolom > index % self.kolom) and count < self.menang and idx < (self.kolom*self.baris)):
@@ -152,7 +149,6 @@ class GameLogic:
             count += 1
             winnerList.append(idx)
             idx += self.kolom + 1
-        print(winnerList)
         if count >= self.menang:
             self.win(currentOccupant, winnerList)
             return
@@ -166,7 +162,6 @@ class GameLogic:
             count += 1
             winnerList.append(idx)
             idx = idx - self.kolom + 1
-            print(idx)
         #==============diagonal kiri ke bawah===============#
         idx = index + self.kolom - 1
         while((idx % self.kolom < index % self.kolom) and count < self.menang and idx < (self.kolom*self.baris)):
@@ -175,7 +170,6 @@ class GameLogic:
             count += 1
             winnerList.append(idx)
             idx = idx + self.kolom - 1
-        print(winnerList)
         if count >= self.menang:
             self.win(currentOccupant, winnerList)
             return
@@ -183,7 +177,8 @@ class GameLogic:
             self.hasWinner = True
             self.winner = -1
             self.setHelperText('Tidak ada yang menang!')
-
+            if self.hasEventOnWin:
+                self.eventOnWin()
 
     def win(self, winnerId, winnerList):
         '''Menghentikan kerja evaluator jika sudah menang
@@ -196,7 +191,6 @@ class GameLogic:
             winnerName = self.p2Name
         if self.hasEventHelperChange:
             self.setHelperText('{} Menang!'.format(winnerName))
-        print(winnerList)
         for index in winnerList:
             self.tileObjList[index].markWinner()
         if self.hasEventOnWin:
@@ -233,6 +227,8 @@ class GameLogic:
         if winner == -1:
             self.hasWinner = True
             self.setHelperText('Tidak ada yang menang!')
+            if self.hasEventOnWin:
+                self.eventOnWin()
         else:
             self.updateHelper()
             self.evaluate(lastOccupiedTileIndex)

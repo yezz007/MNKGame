@@ -1,1 +1,0 @@
-cmd: start cmd /T:0A /k A:\Anaconda\python.exe {FILE_ACTIVE_NAME}  

@@ -60,7 +60,6 @@ class BoardStandard(Frame):
         self.populateBoard()
         self.createButtons()
         self.createHelper()
-        print("Board built", self)
 
     def createHelper(self):
         '''Menginstansiasi teks pembantu yang menampilkan 'Giliran player 1'''
